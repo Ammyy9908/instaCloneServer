@@ -3,29 +3,8 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const verify = require('../verifyToken');
-const multer = require('multer');
-const storage = multer.diskStorage({
+const {cloudinary} = require('../utils/cloudinary');
 
-    destination: (req, file, cb) => cb(null, './uploads/'),
-    filename: (req, file, cb) => cb(null, new Date().toUTCString() + file.originalname),
-
-});
-
-const fileFilter = (req, file, cb) => {
-    if (file.mimetype === 'image/jpg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpeg') {
-        cb(null, true);
-    }
-    else {
-        cb(new Error('Choose a Valid Image Type'), false);
-    }
-
-
-}
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 1024 * 1024 * 1.5 },
-    fileFilter: fileFilter
-});
 
 
 router.post('/login', async (req, res) => {
@@ -103,16 +82,44 @@ router.post('/login', async (req, res) => {
     if (!updatedUser) {
         return res.status(500).json({ message: "Problem occured." });
     }
-}).post('/user/picture/change/:uid', upload.single('profileImg'), async (req, res) => {
-    // Everything went fine.
-    // Update the User avatar file to this file
-    const uid = req.params.uid;
-    const updatedUser = await User.findByIdAndUpdate({ _id: uid }, { avatar: req.file.path });
-    if (!updatedUser) {
-        return res.status(403).json({ message: 'Invalid User id' });
+}).post('/user/picture/change/:uid', async (req, res) => {
+    
+
+    try{
+        const fileStr = req.body.data;
+        const uid = req.params.uid;
+        const user = await User.findOne({ _id:uid });
+        if(user){
+            if(user.avatar!=''){
+                cloudinary.uploader.destroy(user.avatarPublicId);
+                const uploadResponse = await cloudinary.uploader.upload(fileStr, { 
+                    upload_preset:'profiles'
+                    })
+                const updatedUser = await User.findOneAndUpdate({ _id: uid }, { avatar: uploadResponse.url,avatarPublicId:uploadResponse.public_id });
+                if (!updatedUser) {
+                    return res.status(403).json({ message: 'Invalid User id' });
+                }
+                const newUser = await User.findOne({ _id: req.params.uid });
+                 res.status(200).send({ message: "Profile Picture Updated successfully", user: { id: newUser._id, name: newUser.name, email: newUser.email, uname: newUser.username, followers: newUser.followers, followings: newUser.followings, avatar: newUser.avatar } });
+            }
+            else{
+                 const uploadResponse = await cloudinary.uploader.upload(fileStr, { 
+                    upload_preset:'profiles'
+                    })
+                const updatedUser = await User.findOneAndUpdate({ _id: uid }, { avatar: uploadResponse.url,avatarPublicId:uploadResponse.public_id });
+                if (!updatedUser) {
+                    return res.status(403).json({ message: 'Invalid User id' });
+                }
+                const newUser = await User.findOne({ _id: req.params.uid });
+                 res.status(200).send({ message: "Profile Picture Updated successfully", user: { id: newUser._id, name: newUser.name, email: newUser.email, uname: newUser.username, followers: newUser.followers, followings: newUser.followings, avatar: newUser.avatar } });
+                }
+            }
+        }
+    
+    catch(err) {
+        res.status(500).json({error:'Something went wrong'});
     }
-    const user = await User.findOne({ _id: req.params.uid });
-    res.status(200).send({ message: "Profile Picture Updated successfully", user: { id: user._id, name: user.name, email: user.email, uname: user.username, followers: user.followers, followings: user.followings, avatar: user.avatar } });
+   
 }).post('/user/change/pass/:uid', async (req, res) => {
     const { opass, npass } = req.body;
 

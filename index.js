@@ -21,9 +21,10 @@ mongoose.connect('mongodb+srv://Sumit:2145255sb8@cluster0.0wij2.mongodb.net/Inst
 
 // middlewares
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json({limit:'50mb'}))
 app.use(bodyParser.urlencoded({
-    extended: false
+    extended: true,
+    limit:'50mb'
 }));
 app.use('/uploads',express.static('uploads'))
 app.use('/',authRoute);

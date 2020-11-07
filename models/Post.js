@@ -1,31 +1,66 @@
-const {Schema,model} = require('mongoose');
+const { Schema, model } = require('mongoose');
 
 const postSchema = new Schema({
-    imageurl:{
-        type:"string",
-        required: true
+    imageurl: {
+        type: String,
+        required: true,
     },
-    posted_by:{
-        type:"string",
-        required: true
+    imagePublicID: {
+        type: String,
+        required: true,
     },
-    post_body:{
-        type:"string",
-        required: true
+    authorName: {
+        type: String,
+        required: true,
     },
-    hashtag:{
-        type:"string",
-        required: true
+    authorAvatar: {
+        type: String,
+        required: true,
     },
-    likes:{
-        type:"array",
+    author: {
+        type: String,
+        required: false,
+    },
+    authID: {
+        type: String,
+        required: false,
+    },
+    body: {
+        type: String,
+        required: false,
+    },
+    hashtag: {
+        type: Array,
+        required: false,
         default: []
     },
-    comments:{
-        type:"array",
+    likes: {
+        type: Number,
+        default: 0,
+        required: false,
+    },
+    likedBy: {
+        type: Array,
+        required: true
+    },
+    status: {
+        type: String,
+        default: 'active'
+    },
+    comments: {
+        type: Array,
         default: []
+    },
+    posted_by: {
+        type: String,
+        required: true
+    },
+    timestamp:{
+        type: String,
+        required:true
     }
+
 })
 
 
-module.exports = model('post',postSchema);
+module.exports = model('post', postSchema);

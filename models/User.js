@@ -10,6 +10,11 @@ const userSchema = new Schema({
         required: false,
         default:''
     },
+    avatarPublicId:{
+        type:"string",
+        required: false,
+        default:''
+    },
     username:{
         type:"string",
         required: true
