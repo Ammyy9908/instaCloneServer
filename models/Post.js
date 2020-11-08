@@ -39,6 +39,10 @@ const postSchema = new Schema({
         default: 0,
         required: false,
     },
+    location:{
+        type:String,
+        required:true
+    },
     likedBy: {
         type: Array,
         required: true

@@ -23,10 +23,22 @@ router.post('/login', async (req, res) => {
     if (!isValid) {
         return res.status(403).json({ message: "Invalid username and password." });
     }
-    // make a json web token
-    const token = await jwt.sign({ id: user._id }, 'shhh');
-    res.status(200).json({ token: token });
-}).post('/register', async (req, res) => {
+
+    // update the user status to online
+    const onlineUser = await User.updateOne({email:email},{status:"Online"});
+    if(onlineUser){
+// make a json web token
+const token = await jwt.sign({ id: user._id }, 'shhh');
+res.status(200).json({ token: token });
+    }
+    
+}).get('/logout/:uid',async (req,res)=>{
+    const offlineUser = await User.updateOne({_id:req.params.uid},{status:"Offline"});
+    if(offlineUser){
+        res.status(200).send({message:'User Logged Out!'});
+    }
+})
+.post('/register', async (req, res) => {
     const { name, uname, email, password } = req.body;
     // First Check for empty fields
     if (!name || !uname || !email || !password) {

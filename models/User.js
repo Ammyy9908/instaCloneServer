@@ -5,6 +5,11 @@ const userSchema = new Schema({
         type:"string",
         required: true
     },
+    status:{
+        type:"string",
+        required:false,
+        default:'offline'
+    },
     avatar:{
         type:"string",
         required: false,
@@ -14,6 +19,11 @@ const userSchema = new Schema({
         type:"string",
         required: false,
         default:''
+    },
+    city:{
+        type:"string",
+        required:false,
+        default:'Karnatka,India',
     },
     username:{
         type:"string",

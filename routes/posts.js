@@ -7,7 +7,7 @@ const {cloudinary} = require('../utils/cloudinary');
 
 router.post('/new/:uid',async (req,res) => {
    try{
-    const {data,tags,post_body} = req.body;
+    const {data,tags,post_body,city} = req.body;
     // first find a user with this uid and extract name
     const user = await User.findOne({_id:req.params.uid});
     if(!user){
@@ -28,7 +28,8 @@ router.post('/new/:uid',async (req,res) => {
         imagePublicID:uploadResponse.public_id,
         authorName:user.name,
         authorAvatar:user.avatar?user.avatar:`https://avatars.dicebear.com/api/avataaars/${user.username}.svg`,
-        timestamp:new Date().getTime()
+        timestamp:new Date().getTime(),
+        location:city!=''?city:'Karnatka,India'
     })
  
     const savedPost = await newPost.save();
@@ -48,6 +49,37 @@ router.post('/new/:uid',async (req,res) => {
         return res.status(400).json({message:"No Post found for this user"});
     }
     res.status(200).send(posts);
+}).put('/like/:postid',async (req,res)=>{
+    const {likedBy} = req.body;
+    // update the post where post id equal to post id present in paramaters inside request
+    const post = await Post.findOne({_id:req.params.postid});
+
+    // get current liked by array and push request user id to this array and again update this post
+    const currentLikes = [...post.likedBy,likedBy];
+    const updatedPost = await Post.updateOne({_id:req.params.postid},{likedBy:currentLikes});
+    const latestPostData = await Post.findOne({_id:req.params.postid});
+    if(latestPostData){
+        
+            res.status(200).send({liked:true,data:latestPostData});
+        
+    }
+    
+}).put('/dislike/:postid',async (req,res)=>{
+    const {likedBy} = req.body;
+    // update the post where post id equal to post id present in paramaters inside request
+    const post = await Post.findOne({_id:req.params.postid});
+
+    // get current liked by array and push request user id to this array and again update this post
+    const currentLikes = post.likedBy.filter((like)=>like!=likedBy);
+    
+    const updatedPost = await Post.updateOne({_id:req.params.postid},{likedBy:currentLikes});
+    const latestPostData = await Post.findOne({_id:req.params.postid});
+    if(latestPostData){
+        
+            res.status(200).send({liked:true,data:latestPostData});
+        
+    }
+    
 })
 
 module.exports = router;
